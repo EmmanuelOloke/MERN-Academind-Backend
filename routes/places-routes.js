@@ -1,6 +1,6 @@
 const express = require('express');
 
-const router = express.Router(); // Gives us a special object on which we can register middlewares which are filtered by http methods and paths. We can then export out our configured router which we can later import it in our app.js file and register this entire configured router as one single middleware in app.js
+const router = express.Router(); // Gives us a special object on which we can register middlewares which are filtered by http methods and paths. We can then export out our configured router which we can later import in our app.js file and register this entire configured router as one single middleware in app.js
 
 const DUMMY_PLACES = [{
     id: 'p1',
