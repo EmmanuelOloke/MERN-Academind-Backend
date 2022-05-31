@@ -21,6 +21,10 @@ router.get('/:pid', (req, res, next) => {
         return p.id === placeId;
     }); // Default JS Array method that helps us find a specific elements in an array.
 
+    if (!place) {
+        return res.status(404).json({ message: 'No place found' });
+    }
+
     res.json({ place }); // Sends back a response with some json data => {place} => {place: place}, if the name of a property is the same and the name of it's value you can shorten it like so in JS
 });
 
@@ -30,6 +34,10 @@ router.get('/user/:uid', (req, res, next) => {
     const place = DUMMY_PLACES.find(p => {
         return p.creator === userId;
     });
+
+    if (!place) {
+        return res.status(404).json({ message: 'Could not find a place with the provided user id' });
+    }
 
     res.json({ place });
 });
