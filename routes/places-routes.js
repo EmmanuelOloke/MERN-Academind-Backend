@@ -1,5 +1,7 @@
 const express = require('express');
 
+const HttpError = require('../models/http-error');
+
 const router = express.Router(); // Gives us a special object on which we can register middlewares which are filtered by http methods and paths. We can then export out our configured router which we can later import in our app.js file and register this entire configured router as one single middleware in app.js
 
 const DUMMY_PLACES = [{
@@ -22,9 +24,7 @@ router.get('/:pid', (req, res, next) => {
     }); // Default JS Array method that helps us find a specific elements in an array.
 
     if (!place) {
-        const error = new Error('Could not find a place for the provided id.');
-        error.code = 404;
-        throw error;
+        throw new HttpError('Could not find a place for the provided id.', 404);
     }
 
     res.json({ place }); // Sends back a response with some json data => {place} => {place: place}, if the name of a property is the same and the name of it's value you can shorten it like so in JS
@@ -38,9 +38,7 @@ router.get('/user/:uid', (req, res, next) => {
     });
 
     if (!place) {
-        const error = new Error('Could not find a place for the provided user id.');
-        error.code = 404;
-        return next(error);
+        return next(new HttpError('Could not find a place for the provided user id.', 404));
     }
 
     res.json({ place });
