@@ -7,5 +7,12 @@ const app = express();
 
 app.use('/api/places', placesRoutes); // EpressJS will make sure to forward only Routes with paths beginning with /api/places to our places-routes.js configured file
 
+app.use((error, req, res, next) => { // ExpressJS defualt error handler. Special middleware function with 4 parameters instead of 3 (error). ExpressJS treats middleware functions with 4 parameters as special/error handling functions. Only executed on requests that have an error attached to it.
+    if (res.headerSent) { // We check if a response has already been sent
+        return next(error);
+    }
+    res.status(error.code || 500); // We check if the code property on the error object is set. If it's not we fall back to the server error code 500.
+    res.json({ message: error.message || 'An unknown error occurred!' }); // Every error we send back from our API should have a message property, which the attached client can then use to show an error message to their user.
+});
 
 app.listen(8000);

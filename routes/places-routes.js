@@ -22,7 +22,9 @@ router.get('/:pid', (req, res, next) => {
     }); // Default JS Array method that helps us find a specific elements in an array.
 
     if (!place) {
-        return res.status(404).json({ message: 'No place found' });
+        const error = new Error('Could not find a place for the provided id.');
+        error.code = 404;
+        throw error;
     }
 
     res.json({ place }); // Sends back a response with some json data => {place} => {place: place}, if the name of a property is the same and the name of it's value you can shorten it like so in JS
@@ -36,7 +38,9 @@ router.get('/user/:uid', (req, res, next) => {
     });
 
     if (!place) {
-        return res.status(404).json({ message: 'Could not find a place with the provided user id' });
+        const error = new Error('Could not find a place for the provided user id.');
+        error.code = 404;
+        return next(error);
     }
 
     res.json({ place });
