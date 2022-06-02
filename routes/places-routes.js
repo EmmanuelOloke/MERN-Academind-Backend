@@ -8,4 +8,6 @@ router.get('/:pid', placesControllers.getPlaceById);
 
 router.get('/user/:uid', placesControllers.getPlaceByUserId);
 
+router.post('/', placesControllers.createPlace);
+
 module.exports = router; // How to export in Nodejs i.e What is being exported in the file is the router constant
