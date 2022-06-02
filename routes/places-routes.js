@@ -10,4 +10,8 @@ router.get('/user/:uid', placesControllers.getPlaceByUserId);
 
 router.post('/', placesControllers.createPlace);
 
+router.patch('/:pid', placesControllers.updatePlace);
+
+router.delete('/:pid', placesControllers.deletePlace);
+
 module.exports = router; // How to export in Nodejs i.e What is being exported in the file is the router constant
