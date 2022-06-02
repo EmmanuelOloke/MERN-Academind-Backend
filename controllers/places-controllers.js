@@ -1,4 +1,5 @@
 const { v4: uuidv4 } = require('uuid');
+const { validationResult } = require('express-validator');
 
 const HttpError = require('../models/http-error');
 
@@ -43,7 +44,13 @@ const getPlacesByUserId = (req, res, next) => {
 };
 
 const createPlace = (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        throw new HttpError('Invalid inputs passed, please check your entries', 422);
+    }
+
     const { title, description, coordinates, address, creator } = req.body; // Getting the parsed body from body-Parser using req.body
+
     const createdPlace = {
         id: uuidv4(),
         title,
