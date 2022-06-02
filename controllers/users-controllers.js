@@ -16,6 +16,12 @@ const getUsers = (req, res, next) => {
 const signup = (req, res, next) => {
     const { name, email, password } = req.body;
 
+    const hasUser = DUMMY_USERS.find(u => u.email === email);
+
+    if (hasUser) {
+        throw new HttpError('Could not create user, email already exists in our records', 422); // Error code 422 means invalid user input
+    }
+
     const createdUser = {
         id: uuidv4(),
         name,
@@ -34,7 +40,7 @@ const login = (req, res, next) => {
     const identifiedUser = DUMMY_USERS.find(u => u.email === email);
 
     if (!identifiedUser || identifiedUser.password !== password) {
-        throw new HttpError('Could not identify this user, credentials do not match our records', 401);
+        throw new HttpError('Could not identify this user, credentials do not match our records', 401); // Error code 401 means invalid authentication credentials.
     }
 
     res.json({ message: 'Login successful' });
