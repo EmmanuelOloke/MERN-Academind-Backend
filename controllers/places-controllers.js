@@ -2,6 +2,7 @@ const { v4: uuidv4 } = require('uuid');
 const { validationResult } = require('express-validator');
 
 const HttpError = require('../models/http-error');
+const getCoordsForAddress = require('../utils/location');
 
 let DUMMY_PLACES = [{
     id: 'p1',
@@ -43,13 +44,20 @@ const getPlacesByUserId = (req, res, next) => {
     res.json({ places });
 };
 
-const createPlace = (req, res, next) => {
+const createPlace = async(req, res, next) => { // Converted to Async function so that we can work with await.
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        throw new HttpError('Invalid inputs passed, please check your entries', 422);
+        return next(new HttpError('Invalid inputs passed, please check your entries', 422)); // Used next() instead of throw, because throw will not work currectly in a node async function.
     }
 
-    const { title, description, coordinates, address, creator } = req.body; // Getting the parsed body from body-Parser using req.body
+    const { title, description, address, creator } = req.body; // Getting the parsed body from body-Parser using req.body
+
+    let coordinates;
+    try {
+        coordinates = await getCoordsForAddress(address);
+    } catch (error) {
+        return next(error); // Foward the error, if we do have an error and return it so that no other code runs.
+    }
 
     const createdPlace = {
         id: uuidv4(),
