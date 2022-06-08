@@ -1,6 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const bodyParser = require('body-parser');
+const mongoose = require('mongoose');
 
 const placesRoutes = require('./routes/places-routes'); // Importing the configured route from places-routes.js ***** And this now is conviniently a middleware and use the middleware functions like app.use on it
 const userRoutes = require('./routes/users-routes');
@@ -26,4 +27,8 @@ app.use((error, req, res, next) => { // ExpressJS defualt error handler. Special
     res.json({ message: error.message || 'An unknown error occurred!' }); // Every error we send back from our API should have a message property, which the attached client can then use to show an error message to their user.
 });
 
-app.listen(8000);
+mongoose.connect(process.env.DB_URI).then(() => {
+    app.listen(8000);
+}).catch(err => {
+    console.log(err);
+}); // .connect() returns a promise because connecting to the server is an asynchronous task
