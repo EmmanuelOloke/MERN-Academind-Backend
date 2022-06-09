@@ -18,18 +18,23 @@ let DUMMY_PLACES = [{
     creator: 'u1'
 }];
 
-const getPlaceById = (req, res, next) => {
+const getPlaceById = async(req, res, next) => { // Because we're getting from the db, the task is asynchronous and can take some time, so we use asynch/await
     const placeId = req.params.pid; // We use the req.params to get the concrete value that was entered for the concrete request that reaches this function. The params property olds an object where the dynamic segment (:pid) exists as keys and the value will be the concrete value that the user who sent the request entered. 
 
-    const place = DUMMY_PLACES.find(p => {
-        return p.id === placeId;
-    }); // Default JS Array method that helps us find a specific elements in an array.
-
-    if (!place) {
-        throw new HttpError('Could not find a place for the provided id.', 404);
+    let place;
+    try {
+        place = await Place.findById(placeId); // Using the Place model exported from place.js and attaching the mongoose method .findById() which finds a specific id in our request. It doesn't return a promise but .then(), .carch(), async and await will still be available, [mongoose specific]. If we need a real promise we can use .exec().
+    } catch (err) {
+        const error = new HttpError('Something went wrong, could not find place.', 500); // This error is displayed if we can find the place by id but for some reason the get request fails
+        return next(error);
     }
 
-    res.json({ place }); // Sends back a response with some json data => {place} => {place: place}, if the name of a property is the same and the name of it's value you can shorten it like so in JS
+    if (!place) {
+        const error = new HttpError('Could not find a place for the provided id.', 404); // This error is displayed if the request executes fine but we cannot find a place entirely.
+        return next(error);
+    }
+
+    res.json({ place: place.toObject({ getters: true }) }); // Converts the Mongoose place object we get back to a proper JS object with the .toObject() method and removes the default id underscore added by mongoDB by setting getters: true
 };
 
 const getPlacesByUserId = (req, res, next) => {
