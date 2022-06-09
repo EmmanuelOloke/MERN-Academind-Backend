@@ -15,4 +15,4 @@ const placeSchema = new Schema({ // The actual Schema to create a single place. 
     creator: { type: String, required: true }
 });
 
-module.exports = mongoose.model('Place', ); // After we've created the Schema, we need to create the model as well. Special method in mongoose which returns a constructor function. First argument is the name of the model in this case "Place" and the second argument is the schema we want to refer to which in this case if "placeSchema"
+module.exports = mongoose.model('Place', placeSchema); // After we've created the Schema, we need to create the model as well. Special method in mongoose which returns a constructor function. First argument is the name of the model in this case "Place" and the second argument is the schema we want to refer to which in this case is "placeSchema"
