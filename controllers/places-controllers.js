@@ -23,7 +23,7 @@ const getPlaceById = async(req, res, next) => { // Because we're getting from th
 
     let place;
     try {
-        place = await Place.findById(placeId); // Using the Place model exported from place.js and attaching the mongoose method .findById() which finds a specific id in our request. It doesn't return a promise but .then(), .carch(), async and await will still be available, [mongoose specific]. If we need a real promise we can use .exec().
+        place = await Place.findById(placeId); // Using the Place model exported from place.js and attaching the mongoose method .findById() which finds a specific id in our request. It doesn't return a promise but .then(), .catch(), async and await will still be available, [mongoose specific]. If we need a real promise we can use .exec().
     } catch (err) {
         const error = new HttpError('Something went wrong, could not find place.', 500); // This error is displayed if we can find the place by id but for some reason the get request fails
         return next(error);
@@ -37,18 +37,23 @@ const getPlaceById = async(req, res, next) => { // Because we're getting from th
     res.json({ place: place.toObject({ getters: true }) }); // Converts the Mongoose place object we get back to a proper JS object with the .toObject() method and removes the default id underscore added by mongoDB by setting getters: true
 };
 
-const getPlacesByUserId = (req, res, next) => {
+const getPlacesByUserId = async(req, res, next) => {
     const userId = req.params.uid;
 
-    const places = DUMMY_PLACES.filter(p => {
-        return p.creator === userId;
-    });
-
-    if (!places || places.length === 0) {
-        return next(new HttpError('Could not find places for the provided user id.', 404));
+    let places;
+    try {
+        places = await Place.find({ creator: userId }); // .find() is a method available in both mongoDB and mongoose and it returns a cursor. In mongoose it returns an array, which we can then iterate over to get the specific documents where the creator has the user id that has been specified in our get request.
+    } catch (err) {
+        const error = new HttpError('Fetching places failed, please try again', 500);
+        return next(error);
     }
 
-    res.json({ places });
+    if (!places || places.length === 0) {
+        const error = new HttpError('Could not find places for the provided user id.', 404);
+        return next(error);
+    }
+
+    res.json({ places: places.map(place => place.toObject({ getters: true })) });
 };
 
 const createPlace = async(req, res, next) => { // Converted to Async function so that we can work with await.
@@ -76,7 +81,7 @@ const createPlace = async(req, res, next) => { // Converted to Async function so
     });
 
     try {
-        await createdPlace.save(); // .save()is a method in mongoose that handles all the MongoDB logic you need to store a new collection in your DB. Returns a promise, so it's an asynchronous task
+        await createdPlace.save(); // .save() is a method in mongoose that handles all the MongoDB logic you need to store a new collection in your DB. Returns a promise, so it's an asynchronous task
     } catch (err) {
         const error = new HttpError('Creating place failed, please try again', 500);
 
