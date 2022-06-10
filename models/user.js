@@ -11,4 +11,6 @@ const userSchema = new Schema({
     places: { type: String, required: true }
 });
 
+userSchema.plugin(uniqueValidator); // Add unique validator to our schema to make sure we can only create a new user if the email doesn't already exist.
+
 module.exports = mongoose.model('User', userSchema);

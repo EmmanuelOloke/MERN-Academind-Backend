@@ -2,6 +2,7 @@ const { v4: uuidv4 } = require('uuid');
 const { validationResult } = require('express-validator');
 
 const HttpError = require('../models/http-error');
+const User = require('../models/user'); // Importing the user model from user.js
 
 const DUMMY_USERS = [{
     id: 'u1',
@@ -14,30 +15,43 @@ const getUsers = (req, res, next) => {
     res.status(200).json({ users: DUMMY_USERS });
 }
 
-const signup = (req, res, next) => {
+const signup = async(req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        throw new HttpError('Invalid field entry, please check your entries', 422);
+        return next(new HttpError('Invalid field entry, please check your entries', 422));
     }
 
-    const { name, email, password } = req.body;
+    const { name, email, password, places } = req.body;
 
-    const hasUser = DUMMY_USERS.find(u => u.email === email);
-
-    if (hasUser) {
-        throw new HttpError('Could not create user, email already exists in our records', 422); // Error code 422 means invalid user input
+    let existingUser;
+    try {
+        existingUser = await User.findOne({ email: email }) // The findOne() here checks if the document matches the criteria passed into the method, hence checking if the email exists already
+    } catch (err) { // If the try block fails, we simply catch the error
+        const error = new HttpError('Signup failed, please try again', 500);
+        return next(error);
     }
 
-    const createdUser = {
-        id: uuidv4(),
+    if (existingUser) {
+        const error = new HttpError('User exists already, please log in instead', 422);
+        return next(error);
+    }
+
+    const createdUser = new User({
         name,
         email,
-        password
+        image: 'https://live.staticflickr.com/7631/26849088292_36fc52ee90_b.jpg',
+        password,
+        places
+    });
+
+    try {
+        await createdUser.save(); // .save() is a method in mongoose that handles all the MongoDB logic you need to store a new collection in your DB. Returns a promise, so it's an asynchronous task
+    } catch (err) {
+        const error = new HttpError('Signing up failed, please try again', 500);
+        return next(error); // This stops code execution when/if we encounter an error
     }
 
-    DUMMY_USERS.push(createdUser);
-
-    res.status(201).json({ users: createdUser });
+    res.status(201).json({ users: createdUser.toObject({ getters: true }) }); // Converting to normal JS object and removing the default underscore added to id by mongoDB
 }
 
 const login = (req, res, next) => {
