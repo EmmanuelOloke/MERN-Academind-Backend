@@ -54,13 +54,20 @@ const signup = async(req, res, next) => {
     res.status(201).json({ users: createdUser.toObject({ getters: true }) }); // Converting to normal JS object and removing the default underscore added to id by mongoDB
 }
 
-const login = (req, res, next) => {
+const login = async(req, res, next) => {
     const { email, password } = req.body;
 
-    const identifiedUser = DUMMY_USERS.find(u => u.email === email);
+    let existingUser;
+    try {
+        existingUser = await User.findOne({ email: email }) // The findOne() here checks if the document matches the criteria passed into the method, hence checking if the email exists already
+    } catch (err) { // If the try block fails, we simply catch the error
+        const error = new HttpError('Login failed, please try again', 500);
+        return next(error);
+    }
 
-    if (!identifiedUser || identifiedUser.password !== password) {
-        throw new HttpError('Could not identify this user, credentials do not match our records', 401); // Error code 401 means invalid authentication credentials.
+    if (!existingUser || existingUser.password !== password) {
+        const error = new HttpError('Invalid credentialsl, could not log you in', 401);
+        return next(error);
     }
 
     res.json({ message: 'Login successful' });
