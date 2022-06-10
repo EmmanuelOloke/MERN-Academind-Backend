@@ -94,7 +94,7 @@ const createPlace = async(req, res, next) => { // Converted to Async function so
 const updatePlace = async(req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        throw new HttpError('Invalid inputs, please check your entries', 422);
+        return next(new HttpError('Invalid inputs, please check your entries', 422));
     }
 
     const { title, description } = req.body;
