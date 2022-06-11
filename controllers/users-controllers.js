@@ -11,8 +11,15 @@ const DUMMY_USERS = [{
     password: 'tester'
 }];
 
-const getUsers = (req, res, next) => {
-    res.status(200).json({ users: DUMMY_USERS });
+const getUsers = async(req, res, next) => {
+    let users;
+    try {
+        users = await User.find({}, '-password'); // With the find() method here, we search the document stored in DB and find the users. By passing an empty object and the string '-password', we make sure the password field is not return with other user info for security reasons.
+    } catch (err) {
+        const error = new HttpError('Fetching users failed, please try again later', 500);
+        return next(error);
+    }
+    res.json({ users: users.map(user => user.toObject({ getters: true })) }); // We're using the map() method here because find() returns an array.Then turning each user to a default JS object so we can set getters: true to remove the default underscore in the returned id.
 }
 
 const signup = async(req, res, next) => {
@@ -21,7 +28,7 @@ const signup = async(req, res, next) => {
         return next(new HttpError('Invalid field entry, please check your entries', 422));
     }
 
-    const { name, email, password, places } = req.body;
+    const { name, email, password } = req.body;
 
     let existingUser;
     try {
@@ -41,7 +48,7 @@ const signup = async(req, res, next) => {
         email,
         image: 'https://live.staticflickr.com/7631/26849088292_36fc52ee90_b.jpg',
         password,
-        places
+        places: [] // New places will be added to the array by the user. Hence why we first initialize places to be an empty array
     });
 
     try {
