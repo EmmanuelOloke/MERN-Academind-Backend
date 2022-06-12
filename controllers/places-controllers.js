@@ -1,10 +1,12 @@
 const { v4: uuidv4 } = require('uuid');
 const { validationResult } = require('express-validator');
+const mongoose = require('mongoose');
 
 const HttpError = require('../models/http-error');
 const getCoordsForAddress = require('../utils/location');
 
 const Place = require('../models/place');
+const User = require('../models/user'); // We import User here as we will interact with it when a place is added.
 
 let DUMMY_PLACES = [{
     id: 'p1',
@@ -80,8 +82,30 @@ const createPlace = async(req, res, next) => { // Converted to Async function so
         creator
     });
 
+
+    // Instead of just saving directly, we first check if the userId provided exists already.
+    let user;
     try {
-        await createdPlace.save(); // .save() is a method in mongoose that handles all the MongoDB logic you need to store a new collection in your DB. Returns a promise, so it's an asynchronous task
+        user = await User.findById(creator); // Access the creator property of the user and check if the id of our logged in user is already stored in here i.e already existing
+    } catch (err) {
+        const error = new HttpError('Creating place failed, please try again', 500);
+        return next(error);
+    }
+
+    if (!user) {
+        const error = new HttpError('Could not find user for the provided id', 404);
+        return next(error);
+    }
+
+    console.log(user);
+
+    try {
+        const sess = await mongoose.startSession(); // Transaction allows us to perform multiple operations independent of eachother, to work with transactions we first have to start a session. If creating a place or finding a user fails, then we don't save the document to the database
+        sess.startTransaction(); // Here is where the start the transaction.
+        await createdPlace.save({ session: sess }); //Create a place. Save the createdPlace in the db using the currently running session. This also automatically create a unique id for our place. Ssving to the db is an asynchronous task, hence why we user await
+        user.places.push(createdPlace); // Add place id. To make sure the placeId is also added to our user. push() here is not the arry method, but a mongoose method used to establish the connection between the two models we're referring to. Behind the scenes, mongoDB wraps the createdPlace id and adds it to the place field of the user. Only adds the place's id.
+        await user.save({ session: sess }); // Saving the updated user (that is the user that places have been added to) and making sure it is part of our current session.
+        await sess.commitTransaction(); // If all the above passes, then we save in the db by commiting the transaction. If any error occur, the process/transaction will be rolled back by mongoDB.
     } catch (err) {
         const error = new HttpError('Creating place failed, please try again', 500);
 
