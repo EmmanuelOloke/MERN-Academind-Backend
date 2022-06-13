@@ -32,7 +32,7 @@ const getPlaceById = async(req, res, next) => { // Because we're getting from th
     }
 
     if (!place) {
-        const error = new HttpError('Could not find a place for the provided id.', 404); // This error is displayed if the request executes fine but we cannot find a place entirely.
+        const error = new HttpError('Could not find a place for the provided id.', 404); // This error is displayed if the request executes fine but we cannot find a place entirely i.e specifically for the id provided..
         return next(error);
     }
 
