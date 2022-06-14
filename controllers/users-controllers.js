@@ -14,12 +14,12 @@ const DUMMY_USERS = [{
 const getUsers = async(req, res, next) => {
     let users;
     try {
-        users = await User.find({}, '-password'); // With the find() method here, we search the document stored in DB and find the users. By passing an empty object and the string '-password', we make sure the password field is not return with other user info for security reasons.
+        users = await User.find({}, '-password'); // With the .find() method here, we search the document stored in DB and find the users. By passing an empty object and the string '-password', we make sure the password field is not return with other user info for security reasons.
     } catch (err) {
         const error = new HttpError('Fetching users failed, please try again later', 500);
         return next(error);
     }
-    res.json({ users: users.map(user => user.toObject({ getters: true })) }); // We're using the map() method here because find() returns an array.Then turning each user to a default JS object so we can set getters: true to remove the default underscore in the returned id.
+    res.json({ users: users.map(user => user.toObject({ getters: true })) }); // We're using the map() method here because .find() returns an array. Then turning each user to a default JS object so we can set getters: true to remove the default underscore in the returned id.
 }
 
 const signup = async(req, res, next) => {
