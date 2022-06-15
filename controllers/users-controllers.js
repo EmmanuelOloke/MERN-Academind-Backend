@@ -33,7 +33,7 @@ const signup = async(req, res, next) => {
     let existingUser;
     try {
         existingUser = await User.findOne({ email: email }) // The findOne() here checks if the document matches the criteria passed into the method, hence checking if the email exists already
-    } catch (err) { // If the try block fails, we simply catch the error
+    } catch (err) { // If the try block fails, we simply catch the error with a staus code of 500
         const error = new HttpError('Signup failed, please try again', 500);
         return next(error);
     }
