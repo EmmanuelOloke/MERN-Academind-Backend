@@ -8,18 +8,6 @@ const getCoordsForAddress = require('../utils/location');
 const Place = require('../models/place');
 const User = require('../models/user'); // We import User here as we will interact with it when a place is added.
 
-let DUMMY_PLACES = [{
-    id: 'p1',
-    title: 'Empire State Building',
-    description: 'One of the most famous skyscrappers in the world!',
-    location: {
-        lat: 40.7484474,
-        lng: -73.9871516
-    },
-    address: '20 W 34th St, New York, NY 10001',
-    creator: 'u1'
-}];
-
 const getPlaceById = async(req, res, next) => { // Because we're getting from the db, the task is asynchronous and can take some time, so we use asynch/await
     const placeId = req.params.pid; // We use the req.params to get the concrete value that was entered for the concrete request that reaches this function. The params property olds an object where the dynamic segment (:pid) exists as keys and the value will be the concrete value that the user who sent the request entered. 
 
@@ -42,7 +30,6 @@ const getPlaceById = async(req, res, next) => { // Because we're getting from th
 const getPlacesByUserId = async(req, res, next) => {
     const userId = req.params.uid;
 
-    // let places;
     let userWithPlaces;
     try {
         userWithPlaces = await User.findById(userId).populate('places'); // Here we get a specific user with the userId, then with the .populate() method, we now get access to the places that specific user has, by passing in the 'places' property.
@@ -97,8 +84,6 @@ const createPlace = async(req, res, next) => { // Converted to Async function so
         const error = new HttpError('Could not find user for the provided id', 404);
         return next(error);
     }
-
-    // console.log(user);
 
     try {
         const sess = await mongoose.startSession(); // Transaction allows us to perform multiple operations independent of eachother, to work with transactions we first have to start a session. If creating a place or finding a user fails, then we don't save the document to the database
