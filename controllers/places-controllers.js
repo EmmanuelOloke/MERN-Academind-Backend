@@ -150,14 +150,24 @@ const deletePlace = async(req, res, next) => {
 
     let place;
     try {
-        place = await Place.findById(placeId); // To delete a place, first we need to find it and that's what's been done here.
+        place = await Place.findById(placeId).populate('creator'); // To delete a place, first we need to find it and that's what's been done here. .populate() allows us to refer to a document stored in another collection and to work with the data in that document. We do this because when we delete a place, we also want to delete the id of that place in the corresponding user document. This populate() method workds because we have a ref property in the user.js and place.js Schemas.
     } catch (err) {
         const error = new HttpError('Something went wrong, cannot delete place.', 500);
         return next(error);
     }
 
+    if (!place) { // Check if the place actually exists and if it doesn't throw an error
+        const error = new HttpError('Could not find places for this id', 404);
+        return next(error);
+    }
+
     try {
-        await place.remove(); // Here we actually remove the place from the Database. Async task, hence why we used await.
+        const sess = await mongoose.startSession();
+        sess.startTransaction();
+        await place.remove({ session: sess }); // We're removing the place from the DB, the seesion peoperty is added to make sure that we refer to the current session we just created. Removing is an async task hence why we have await.
+        place.creator.places.pull(place); // Accessing the place stored in the creator, that is the placeId. .pull() will automatically remove an id.
+        await place.creator.save({ session: sess }); // This saves our newly created user. "creator" gives us the full user opbject linkde to that place
+        await sess.commitTransaction();
     } catch (err) {
         const error = new HttpError('Something went wrong, could not delete the place.', 500);
         return next(error);
