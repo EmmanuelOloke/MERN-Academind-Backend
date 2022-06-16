@@ -42,20 +42,21 @@ const getPlaceById = async(req, res, next) => { // Because we're getting from th
 const getPlacesByUserId = async(req, res, next) => {
     const userId = req.params.uid;
 
-    let places;
+    // let places;
+    let userWithPlaces;
     try {
-        places = await Place.find({ creator: userId }); // .find() is a method available in both mongoDB and mongoose and it returns a cursor. In mongoose it returns an array, which we can then iterate over to get the specific documents where the creator has the user id that has been specified in our get request.
+        userWithPlaces = await User.findById(userId).populate('places'); // Here we get a specific user with the userId, then with the .populate() method, we now get access to the places that specific user has, by passing in the 'places' property.
     } catch (err) {
         const error = new HttpError('Fetching places failed, please try again', 500);
         return next(error);
     }
 
-    if (!places || places.length === 0) {
+    if (!userWithPlaces || userWithPlaces.places.length === 0) {
         const error = new HttpError('Could not find places for the provided user id.', 404);
         return next(error);
     }
 
-    res.json({ places: places.map(place => place.toObject({ getters: true })) }); // Using .map() here because the place we get back is an array.
+    res.json({ places: userWithPlaces.places.map(place => place.toObject({ getters: true })) }); // Using .map() here because the place we get back is an array.
 };
 
 const createPlace = async(req, res, next) => { // Converted to Async function so that we can work with await.
@@ -97,7 +98,7 @@ const createPlace = async(req, res, next) => { // Converted to Async function so
         return next(error);
     }
 
-    console.log(user);
+    // console.log(user);
 
     try {
         const sess = await mongoose.startSession(); // Transaction allows us to perform multiple operations independent of eachother, to work with transactions we first have to start a session. If creating a place or finding a user fails, then we don't save the document to the database
