@@ -69,7 +69,7 @@ const login = async(req, res, next) => {
         return next(error);
     }
 
-    res.json({ message: 'Login successful' });
+    res.json({ message: 'Login successful', user: existingUser.toObject({ getters: true }) }); // We're also returning/sending a response with the userId back to the frontend so we can use it in the Auth.js file as responseData.user.id
 }
 
 exports.getUsers = getUsers;
