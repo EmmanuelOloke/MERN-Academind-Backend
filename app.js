@@ -1,6 +1,7 @@
 require('dotenv').config();
 
 const fs = require('fs');
+const path = require('path'); // path module built into nodejs to serve files
 
 const express = require('express');
 const bodyParser = require('body-parser');
@@ -13,6 +14,8 @@ const HttpError = require('./models/http-error');
 const app = express();
 
 app.use(bodyParser.json()); // This will parse any incoming request on the body, and extract any json data in there and convert it to regular JS data structure like objects and arrays and then call next automatically so that we reach the next middlewaare in line which are our own custom routes and also add the json data there.
+
+app.use('/uploads/images', express.static(path.join('uploads', 'images'))); // Requests to the specified url will be handled by the express.static() middleware, built into express. It returns the requested file. It expects a path pointing to the folder from which you want to serve the files
 
 app.use((req, res, next) => { // Middleware to handle Cross-Origin Resource Sharing (CORS) error
     res.setHeader('Access-Control-Allow-Origin', '*'); // This allows us to control which domain should have access to our requests, and setting it to '*' means we allow every domain to have accesss, thereby eliminating the CORS error.
