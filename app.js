@@ -1,4 +1,7 @@
 require('dotenv').config();
+
+const fs = require('fs');
+
 const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
@@ -27,6 +30,12 @@ app.use((req, res, next) => {
 });
 
 app.use((error, req, res, next) => { // ExpressJS defualt error handler. Special middleware function with 4 parameters instead of 3 (error). ExpressJS treats middleware functions with 4 parameters as special/error handling functions. Only executed on requests that have an error attached to it.
+    if (req.file) { // Multer adds a file property to the req object, so we can check if we do have a file attached to the request, and roll back the saving process/delete the file if we don't
+        fs.unlink(req.file.path, (err) => { // We use the file system (fs) object to delete(unlink) the file. path is a property on the file object added by multer and it points to the file to be deleted. The callbac function will be triggered when the deletion is done
+            console.log(err);
+        });
+    }
+
     if (res.headerSent) { // We check if a response has already been sent
         return next(error);
     }
