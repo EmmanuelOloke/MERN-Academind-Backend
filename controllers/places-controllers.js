@@ -66,7 +66,7 @@ const createPlace = async(req, res, next) => { // Converted to Async function so
         description,
         address,
         location: coordinates,
-        image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/View_of_Empire_State_Building_from_Rockefeller_Center_New_York_City_dllu.jpg/640px-View_of_Empire_State_Building_from_Rockefeller_Center_New_York_City_dllu.jpg',
+        image: req.file.path,
         creator
     });
 
