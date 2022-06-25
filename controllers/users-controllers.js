@@ -1,4 +1,5 @@
 const { validationResult } = require('express-validator');
+const bcrypt = require('bcryptjs');
 
 const HttpError = require('../models/http-error');
 const User = require('../models/user'); // Importing the user model from user.js
@@ -35,11 +36,18 @@ const signup = async(req, res, next) => {
         return next(error);
     }
 
+    let hashedPassword;
+    try { // hash() returns a promise and since we're already in an async function, it makes sense to just use an await on it
+        hashedPassword = await bcrypt.hash(password, 12); // hash() takes two parameters, which are the password string to be hashed and a salting round number which determines how difficult the password will be to reverse-engineer
+    } catch (err) {
+        const error = new HttpError('Could not create user, please try again', 500);
+        return next(error);
+    }
     const createdUser = new User({
         name,
         email,
         image: req.file.path,
-        password,
+        password: hashedPassword,
         places: [] // New places will be added to the array by the user. Hence why we first initialize places to be an empty array
     });
 
