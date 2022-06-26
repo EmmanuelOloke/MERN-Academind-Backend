@@ -59,8 +59,8 @@ const signup = async(req, res, next) => {
         return next(error); // This stops code execution when/if we encounter an error
     }
     // At this point we know we've already stored a user in the database, so we know this is a valid user, so we can now generate a token for that user
+    let token;
     try {
-        let token;
         token = jwt.sign({ userId: createdUser.id, email: createdUser.email }, 'supersecret_dont_share', { expiresIn: '1h' }); // The sign method returns a string in the end, which will be the token. It takes two argument. The first arg is the payload of the token (the data you wanna encode into the token) which can be a string, an object or a buffer, here we passed an object containing the userId and email. The second argument is the private key string. The third argument is optional, check out the docs
     } catch (err) {
         const error = new HttpError('Signing up failed, please try again', 500);
@@ -98,7 +98,6 @@ const login = async(req, res, next) => {
         const error = new HttpError('Invalid credentials, could not log you in', 401);
         return next(error);
     }
-
     // We also generate the token on login. 
     try {
         let token;
