@@ -99,7 +99,16 @@ const login = async(req, res, next) => {
         return next(error);
     }
 
-    res.json({ message: 'Login successful', user: existingUser.toObject({ getters: true }) }); // We're also returning/sending a response with the userId back to the frontend so we can use it in the Auth.js file as responseData.user.id
+    // We also generate the token on login. 
+    try {
+        let token;
+        token = jwt.sign({ userId: existingUser.id, email: existingUser.email }, 'supersecret_dont_share', { expiresIn: '1h' }); // We make sure to use the same private key as the one in signup route so we don't generate different tokens, so we can verify them on the backend
+    } catch (err) {
+        const error = new HttpError('Logging in failed, please try again', 500);
+        return next(error);
+    }
+
+    res.json({ userId: existingUser.id, email: existingUser.email, token: token }); // Sending back the userId, email and the token generated
 }
 
 exports.getUsers = getUsers;
