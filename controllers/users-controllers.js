@@ -1,5 +1,6 @@
 const { validationResult } = require('express-validator');
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
 const HttpError = require('../models/http-error');
 const User = require('../models/user'); // Importing the user model from user.js
@@ -57,8 +58,16 @@ const signup = async(req, res, next) => {
         const error = new HttpError('Signing up failed, please try again', 500);
         return next(error); // This stops code execution when/if we encounter an error
     }
-
-    res.status(201).json({ users: createdUser.toObject({ getters: true }) }); // Converting to normal JS object and removing the default underscore added to id by mongoDB
+    // At this point we know we've already stored a user in the database, so we know this is a valid user, so we can now generate a token for that user
+    try {
+        let token;
+        token = jwt.sign({ userId: createdUser.id, email: createdUser.email }, 'supersecret_dont_share', { expiresIn: '1h' }); // The sign method returns a string in the end, which will be the token. It takes two argument. The first arg is the payload of the token (the data you wanna encode into the token) which can be a string, an object or a buffer, here we passed an object containing the userId and email. The second argument is the private key string. The third argument is optional, check out the docs
+    } catch (err) {
+        const error = new HttpError('Signing up failed, please try again', 500);
+        return next(error);
+    }
+    // Eventually here we return the token and some user details, instead of the entire user object, because not all user data is required on the frontend, but that depends on the app being built
+    res.status(201).json({ userId: createdUser.Id, email: createdUser.email, token: token }); // Sending back the id of the user that was created, the email and the token that was generated.
 }
 
 const login = async(req, res, next) => {
