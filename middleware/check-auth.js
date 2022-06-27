@@ -4,7 +4,7 @@ const HttpError = require('../models/http-error');
 
 module.exports = (req, res, next) => {
     // Middleware function to check whether we have a token and if the token is valid
-    if (req.method === 'POST' || req.method === 'OPTIONS' || req.method === 'PATCH' || req.method === 'DELETE') { // Adding this because of the browser behaviour towards authentication
+    if (req.method === 'OPTIONS') { // Adding this because of the browser behaviour towards authentication
         return next();
     }
     try {
@@ -13,7 +13,7 @@ module.exports = (req, res, next) => {
             throw new Error('Authentication failed'); // If we don't have a token, we basically throw an error.
         }
         const decodedToken = jwt.verify(token, 'supersecret_dont_share'); // The verify object returns a string or an object, which is the payload that was encoded into the token. Containing the userId, email and token as specified in users-controller.js file
-        reg.userData = { userId: decodedToken.userId }; // Here we extract the userId from the verified token and add it to the user data request
+        req.userData = { userId: decodedToken.userId }; // Here we extract the userId from the verified token and add it to the user data request
         next();
     } catch (err) {
         const error = new HttpError('Authentication failed', 401);

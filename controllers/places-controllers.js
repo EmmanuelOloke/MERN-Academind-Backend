@@ -121,6 +121,11 @@ const updatePlace = async(req, res, next) => {
         return next(error);
     }
 
+    if (place.creator.toString() !== req.userData.userId) { // Making sure only the user that created a place can edit that particular place. We have to use .toString on creator because it is originally an object of type mongoose
+        const error = new HttpError('You are not allowed to edit this place.', 401); // 401 is for authorization error
+        return next(error);
+    }
+
     place.title = title;
     place.description = description;
 
