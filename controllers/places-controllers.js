@@ -122,7 +122,7 @@ const updatePlace = async(req, res, next) => {
     }
 
     if (place.creator.toString() !== req.userData.userId) { // Making sure only the user that created a place can edit that particular place. We have to use .toString on creator because it is originally an object of type mongoose
-        const error = new HttpError('You are not allowed to edit this place.', 401); // 401 is for authorization error
+        const error = new HttpError('You are not allowed to edit this place.', 401); // 401 is for unauthorization error
         return next(error);
     }
 
@@ -144,7 +144,7 @@ const deletePlace = async(req, res, next) => {
 
     let place;
     try {
-        place = await Place.findById(placeId).populate('creator'); // To delete a place, first we need to find it and that's what's been done here. .populate() allows us to refer to a document stored in another collection and to work with the data in that document. We do this because when we delete a place, we also want to delete the id of that place in the corresponding user document. This populate() method workds because we have a ref property in the user.js and place.js Schemas.
+        place = await Place.findById(placeId).populate('creator'); // To delete a place, first we need to find it and that's what's been done here. .populate() allows us to refer to a document stored in another collection and to work with the data in that document. We do this because when we delete a place, we also want to delete the id of that place in the corresponding user document. This populate() method holds the full user objects and works because we have a ref property in the user.js and place.js Schemas.
     } catch (err) {
         const error = new HttpError('Something went wrong, cannot delete place.', 500);
         return next(error);
@@ -155,6 +155,10 @@ const deletePlace = async(req, res, next) => {
         return next(error);
     }
 
+    if (place.creator.id !== req.userData.userId) { // Since the populate() method gives us access to the full creator object here, therefore we can use place.creator.id to get the id of the particular user and compare it to the userData id gotten from the req body
+        const error = new HttpError('You are not allowed to delete this place.', 401);
+        return next(error);
+    }
     const imagePath = place.image; // Getting access to the image path
 
     try {

@@ -16,7 +16,7 @@ module.exports = (req, res, next) => {
         req.userData = { userId: decodedToken.userId }; // Here we extract the userId from the verified token and add it to the user data request
         next();
     } catch (err) {
-        const error = new HttpError('Authentication failed', 401);
+        const error = new HttpError('Authentication failed', 403); // Forbidden error
         return next(error);
     }
 };
