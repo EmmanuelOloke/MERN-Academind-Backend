@@ -99,8 +99,8 @@ const login = async(req, res, next) => {
         return next(error);
     }
     // We also generate the token on login. 
+    let token;
     try {
-        let token;
         token = jwt.sign({ userId: existingUser.id, email: existingUser.email }, 'supersecret_dont_share', { expiresIn: '1h' }); // We make sure to use the same private key as the one in signup route so we don't generate different tokens, so we can verify them on the backend
     } catch (err) {
         const error = new HttpError('Logging in failed, please try again', 500);

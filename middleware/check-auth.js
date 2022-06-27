@@ -2,7 +2,11 @@ const jwt = require('jsonwebtoken'); // Import jwt here so we can use it to veri
 
 const HttpError = require('../models/http-error');
 
-module.exports = (req, res, next) => { // Middleware function to check whether we have a token and if the token is valid
+module.exports = (req, res, next) => {
+    // Middleware function to check whether we have a token and if the token is valid
+    if (req.method === 'POST' || req.method === 'OPTIONS' || req.method === 'PATCH' || req.method === 'DELETE') { // Adding this because of the browser behaviour towards authentication
+        return next();
+    }
     try {
         const token = req.headers.authorization.split(' ')[1]; // Encoding the token in the headers of the incoming request (Best Practice). The authorization object returns something of this sort (Authorization: 'Bearer TOKEN') and we use the split method split it after the Bearer keyword and return the second element which will be the token
         if (!token) {
