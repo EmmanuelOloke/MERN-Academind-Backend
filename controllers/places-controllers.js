@@ -55,7 +55,7 @@ const createPlace = async(req, res, next) => { // Converted to Async function so
         return next(new HttpError('Invalid inputs passed, please check your entries', 422)); // Used next() instead of throw, because throw will not work currectly in a node async function.
     }
 
-    const { title, description, address, creator } = req.body; // Getting the parsed body from body-Parser using req.body
+    const { title, description, address } = req.body; // Getting the parsed body from body-Parser using req.body
 
     let coordinates;
     try {
@@ -70,14 +70,13 @@ const createPlace = async(req, res, next) => { // Converted to Async function so
         address,
         location: coordinates,
         image: req.file.path,
-        creator
+        creator: req.userData.userId // This makes sure we get the userId from the one extracted from the token and not just the request where invalid userId can be passed
     });
-
 
     // Instead of just saving directly, we first check if the userId provided exists already.
     let user;
     try {
-        user = await User.findById(creator); // Access the creator property of the user and check if the id of our logged in user is already stored in here i.e already existing
+        user = await User.findById(req.userData.userId); // Access the creator property of the user and check if the id of our logged in user is already stored in here i.e already existing
     } catch (err) {
         const error = new HttpError('Creating place failed, please try again', 500);
         return next(error);

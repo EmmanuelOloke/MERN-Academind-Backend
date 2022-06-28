@@ -8,7 +8,7 @@ const User = require('../models/user'); // Importing the user model from user.js
 const getUsers = async(req, res, next) => {
     let users;
     try {
-        users = await User.find({}, '-password'); // With the .find() method here, we search the document stored in DB and find the users. By passing an empty object and the string '-password', we make sure the password field is not return with other user info for security reasons.
+        users = await User.find({}, '-password'); // With the .find() method here, we search the document stored in DB and find the users. By passing an empty object and the string '-password', we make sure the password field is not returned with other user info for security reasons.
     } catch (err) {
         const error = new HttpError('Fetching users failed, please try again later', 500);
         return next(error);
