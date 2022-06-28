@@ -61,7 +61,7 @@ const signup = async(req, res, next) => {
     // At this point we know we've already stored a user in the database, so we know this is a valid user, so we can now generate a token for that user
     let token;
     try {
-        token = jwt.sign({ userId: createdUser.id, email: createdUser.email }, 'supersecret_dont_share', { expiresIn: '1h' }); // The sign method returns a string in the end, which will be the token. It takes two argument. The first arg is the payload of the token (the data you wanna encode into the token) which can be a string, an object or a buffer, here we passed an object containing the userId and email. The second argument is the private key string. The third argument is optional, check out the docs
+        token = jwt.sign({ userId: createdUser.id, email: createdUser.email }, process.env.JWT_KEY, { expiresIn: '1h' }); // The sign method returns a string in the end, which will be the token. It takes two argument. The first arg is the payload of the token (the data you wanna encode into the token) which can be a string, an object or a buffer, here we passed an object containing the userId and email. The second argument is the private key string. The third argument is optional, check out the docs
     } catch (err) {
         const error = new HttpError('Signing up failed, please try again', 500);
         return next(error);
@@ -101,7 +101,7 @@ const login = async(req, res, next) => {
     // We also generate the token on login. 
     let token;
     try {
-        token = jwt.sign({ userId: existingUser.id, email: existingUser.email }, 'supersecret_dont_share', { expiresIn: '1h' }); // We make sure to use the same private key as the one in signup route so we don't generate different tokens, so we can verify them on the backend
+        token = jwt.sign({ userId: existingUser.id, email: existingUser.email }, process.env.JWT_KEY, { expiresIn: '1h' }); // We make sure to use the same private key as the one in signup route so we don't generate different tokens, so we can verify them on the backend
     } catch (err) {
         const error = new HttpError('Logging in failed, please try again', 500);
         return next(error);

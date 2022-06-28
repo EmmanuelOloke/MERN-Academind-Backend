@@ -12,7 +12,7 @@ module.exports = (req, res, next) => {
         if (!token) {
             throw new Error('Authentication failed'); // If we don't have a token, we basically throw an error.
         }
-        const decodedToken = jwt.verify(token, 'supersecret_dont_share'); // The verify object returns a string or an object, which is the payload that was encoded into the token. Containing the userId, email and token as specified in users-controller.js file
+        const decodedToken = jwt.verify(token, process.env.JWT_KEY); // The verify object returns a string or an object, which is the payload that was encoded into the token. Containing the userId, email and token as specified in users-controller.js file
         req.userData = { userId: decodedToken.userId }; // Here we extract the userId from the verified token and add it to the user data request
         next();
     } catch (err) {
