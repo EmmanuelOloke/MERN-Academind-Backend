@@ -47,7 +47,7 @@ app.use((error, req, res, next) => { // ExpressJS defualt error handler. Special
 });
 
 mongoose.connect(`mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@mern-academind-mongodb.4ruhkba.mongodb.net/${process.env.DB_NAME}?retryWrites=true&w=majority`).then(() => {
-    app.listen(8000);
+    app.listen(process.env.PORT || 8000);
 }).catch(err => {
     console.log(err);
 }); // .connect() returns a promise because connecting to the server is an asynchronous task
