@@ -14,7 +14,10 @@ const app = express();
 app.use(bodyParser.json()); // This will parse any incoming request on the body, and extract any json data in there and convert it to regular JS data structure like objects and arrays and then call next automatically so that we reach the next middlewaare in line which are our own custom routes and also add the json data there.
 
 app.use('/uploads/images', express.static(path.join('uploads', 'images'))); // Requests to the specified url will be handled by the express.static() middleware, built into express. It returns the requested file. It expects a path pointing to the folder from which you want to serve the files
+app.use(express.static(path.join('public')));
 
+
+// When you are serving both the frontend and the backend on the same host, you can ommit the CORS header below
 app.use((req, res, next) => { // Middleware to handle Cross-Origin Resource Sharing (CORS) error
     res.setHeader('Access-Control-Allow-Origin', '*'); // This allows us to control which domain should have access to our requests, and setting it to '*' means we allow every domain to have accesss, thereby eliminating the CORS error.
     res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization'); // Specifying which headers the requests sent by the browser may have
@@ -26,9 +29,13 @@ app.use('/api/places', placesRoutes); // EpressJS will make sure to forward only
 app.use('/api/users', userRoutes);
 
 app.use((req, res, next) => {
-    const error = new HttpError('Could not find this route', 404);
-    throw error;
+    res.sendFile(path.resolve(__dirname, 'public', 'index.html')); // Method provided by express to send back a request made up of one file. For every unknown route we send back the index.html file, so that the frontend react routing can take care of any unknown url
 });
+
+// app.use((req, res, next) => {
+//     const error = new HttpError('Could not find this route', 404);
+//     throw error;
+// });
 
 app.use((error, req, res, next) => { // ExpressJS defualt error handler. Special middleware function with 4 parameters instead of 3 (error). ExpressJS treats middleware functions with 4 parameters as special/error handling functions. Only executed on requests that have an error attached to it.
     if (req.file) { // Multer adds a file property to the req object, so we can check if we do have a file attached to the request, and roll back the saving process/delete the file if we don't
