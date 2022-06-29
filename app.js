@@ -18,12 +18,12 @@ app.use(express.static(path.join('public')));
 
 
 // When you are serving both the frontend and the backend on the same host, you can ommit the CORS header below
-app.use((req, res, next) => { // Middleware to handle Cross-Origin Resource Sharing (CORS) error
-    res.setHeader('Access-Control-Allow-Origin', '*'); // This allows us to control which domain should have access to our requests, and setting it to '*' means we allow every domain to have accesss, thereby eliminating the CORS error.
-    res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization'); // Specifying which headers the requests sent by the browser may have
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, DELETE'); // Controls which HTTP methods may be used on the Frontend
-    next();
-});
+// app.use((req, res, next) => { // Middleware to handle Cross-Origin Resource Sharing (CORS) error
+//     res.setHeader('Access-Control-Allow-Origin', '*'); // This allows us to control which domain should have access to our requests, and setting it to '*' means we allow every domain to have accesss, thereby eliminating the CORS error.
+//     res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization'); // Specifying which headers the requests sent by the browser may have
+//     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, DELETE'); // Controls which HTTP methods may be used on the Frontend
+//     next();
+// });
 
 app.use('/api/places', placesRoutes); // EpressJS will make sure to forward only Routes with paths beginning with /api/places to our places-routes.js configured file
 app.use('/api/users', userRoutes);
