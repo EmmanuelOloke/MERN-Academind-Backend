@@ -1,39 +1,40 @@
-const fs = require('fs');
-const path = require('path'); // path module built into nodejs to serve files
-require('dotenv').config();
+const fs = require("fs");
+const path = require("path"); // path module built into nodejs to serve files
+require("dotenv").config();
 
-const express = require('express');
-const bodyParser = require('body-parser');
-const mongoose = require('mongoose');
+const express = require("express");
+const bodyParser = require("body-parser");
+const mongoose = require("mongoose");
+const pool = require("./db");
 
-const placesRoutes = require('./routes/places-routes'); // Importing the configured route from places-routes.js ***** And this now is conveniently a middleware and use the middleware functions like app.use on it
-const userRoutes = require('./routes/users-routes');
-const HttpError = require('./models/http-error');
+// const placesRoutes = require('./routes/places-routes'); // Importing the configured route from places-routes.js ***** And this now is conveniently a middleware and use the middleware functions like app.use on it
+// const userRoutes = require('./routes/users-routes');
+const HttpError = require("./models/http-error");
 
 const app = express();
 
 app.use(bodyParser.json()); // This will parse any incoming request on the body, and extract any json data in there and convert it to regular JS data structure like objects and arrays and then call next automatically so that we reach the next middlewaare in line which are our own custom routes and also add the json data there.
 
-app.use('/uploads/images', express.static(path.join('uploads', 'images'))); // Requests to the specified url will be handled by the express.static() middleware, built into express. It returns the requested file. It expects a path pointing to the folder from which you want to serve the files
-app.use(express.static(path.join('public')));
+app.use("/uploads/images", express.static(path.join("uploads", "images"))); // Requests to the specified url will be handled by the express.static() middleware, built into express. It returns the requested file. It expects a path pointing to the folder from which you want to serve the files
+app.use(express.static(path.join("public")));
 
 // When you are serving both the frontend and the backend on the same host, you can omit the CORS header below
 app.use((req, res, next) => {
   // Middleware to handle Cross-Origin Resource Sharing (CORS) error
-  res.setHeader('Access-Control-Allow-Origin', '*'); // This allows us to control which domain should have access to our requests, and setting it to '*' means we allow every domain to have accesss, thereby eliminating the CORS error.
+  res.setHeader("Access-Control-Allow-Origin", "*"); // This allows us to control which domain should have access to our requests, and setting it to '*' means we allow every domain to have accesss, thereby eliminating the CORS error.
   res.setHeader(
-    'Access-Control-Allow-Headers',
-    'Origin, X-Requested-With, Content-Type, Accept, Authorization'
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content-Type, Accept, Authorization"
   ); // Specifying which headers the requests sent by the browser may have
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, DELETE'); // Controls which HTTP methods may be used on the Frontend
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, PATCH, DELETE"); // Controls which HTTP methods may be used on the Frontend
   next();
 });
 
-app.use('/api/places', placesRoutes); // ExpressJS will make sure to forward only Routes with paths beginning with /api/places to our places-routes.js configured file
-app.use('/api/users', userRoutes);
+// app.use('/api/places', placesRoutes); // ExpressJS will make sure to forward only Routes with paths beginning with /api/places to our places-routes.js configured file
+// app.use('/api/users', userRoutes);
 
 app.use((req, res, next) => {
-  res.sendFile(path.resolve(__dirname, 'public', 'index.html')); // Method provided by express to send back a request made up of one file. For every unknown route we send back the index.html file, so that the frontend react routing can take care of any unknown url
+  res.sendFile(path.resolve(__dirname, "public", "index.html")); // Method provided by express to send back a request made up of one file. For every unknown route we send back the index.html file, so that the frontend react routing can take care of any unknown url
 });
 
 // app.use((req, res, next) => {
@@ -56,16 +57,28 @@ app.use((error, req, res, next) => {
     return next(error);
   }
   res.status(error.code || 500); // We check if the code property on the error object is set. If it's not we fall back to the server error code 500.
-  res.json({ message: error.message || 'An unknown error occurred!' }); // Every error we send back from our API should have a message property, which the attached client can then use to show an error message to their user.
+  res.json({ message: error.message || "An unknown error occurred!" }); // Every error we send back from our API should have a message property, which the attached client can then use to show an error message to their user.
 });
 
-mongoose
-  .connect(
-    `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@academind-mongodb.r4go223.mongodb.net/${process.env.DB_NAME}?retryWrites=true&w=majority`
-  )
-  .then(() => {
-    app.listen(process.env.PORT || 8000);
-  })
-  .catch((err) => {
-    console.log(err);
-  }); // .connect() returns a promise because connecting to the server is an asynchronous task
+// Example: Test PostgreSQL connection on startup
+pool.query("SELECT NOW()", (err, res) => {
+  if (err) {
+    console.error("PostgreSQL connection error:", err.stack);
+  } else {
+    console.log("PostgreSQL connected:", res.rows[0]);
+  }
+});
+
+// Remove or comment out the mongoose connection block below if you are switching fully to PostgreSQL
+// mongoose
+//   .connect(
+//     `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@academind-mongodb.r4go223.mongodb.net/${process.env.DB_NAME}?retryWrites=true&w=majority`
+//   )
+//   .then(() => {
+//     app.listen(process.env.PORT || 8000);
+//   })
+//   .catch((err) => {
+//     console.log(err);
+//   });
+
+app.listen(process.env.PORT || 8000);
