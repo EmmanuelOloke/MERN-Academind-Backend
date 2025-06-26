@@ -71,7 +71,7 @@ const signup = async (req, res, next) => {
     return next(error);
   }
   // Eventually here we return the token and some user details, instead of the entire user object, because not all user data is required on the frontend, but that depends on the app being built
-  res.status(201).json({ userId: createdUser.Id, email: createdUser.email, token: token }); // Sending back the id of the user that was created, the email and the token that was generated.
+  res.status(201).json({ userId: createdUser.id, email: createdUser.email, token: token }); // Sending back the id of the user that was created, the email and the token that was generated.
 };
 
 const login = async (req, res, next) => {
@@ -91,7 +91,7 @@ const login = async (req, res, next) => {
     return next(error);
   }
 
-  isValidPassword = false;
+  let isValidPassword = false;
   try {
     isValidPassword = await bcrypt.compare(password, existingUser.password); // The compare method provided by bcrypt compare the plain text password entered to the hashed password already saved in the db. It returns a promise which in the end yields a boolean.
   } catch (err) {
